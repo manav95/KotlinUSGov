@@ -26,7 +26,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
 public class IntroActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener{
-    private static Activity mainContext = this.getApplicationContext();
     private GoogleApiClient mGoogleApiClient;
     private Location mLocation;
     private NetworkAsyncWrapper networkAsyncWrapper;
@@ -62,10 +61,6 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
 
         mLocationManager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
 
-    }
-
-    public static Activity getMain() {
-        return mainContext;
     }
 
     @Override
@@ -143,7 +138,7 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
 
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         setIntro = false;
-        networkAsyncWrapper.start(latLng);
+        networkAsyncWrapper.start(latLng, this.getApplicationContext());
     }
 
     private boolean checkLocation() {

@@ -1,6 +1,7 @@
 package com.example.manavdutta1.myapplication;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Geocoder;
 import android.location.Location;
@@ -27,60 +28,29 @@ import java.util.Locale;
 
 //stores asynchronous tasks for network operations
 public class NetworkAsyncWrapper {
-    protected Location mLastLocation;
-    private AddressResultReceiver mResultReceiver;
 
-    protected void startIntentService() {
-        Intent intent = new Intent(this, FetchAddressIntentService.class);
-        intent.putExtra(Constants.RECEIVER, mResultReceiver);
-        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
-        IntroActivity.getMain().startService(intent);
-    }
-
-    private AsyncTask<LatLng, Void, String> congressionalTask = new AsyncTask<LatLng, Void, String>() {
+    private AsyncTask<Object, Void, String> congressionalTask = new AsyncTask<Object, Void, String>() {
         @Override
-        protected String doInBackground(LatLng... latLngs) {
-            LatLng latlng = latLngs[0];
+        protected String doInBackground(Object... params) {
+            Address address = (Address) params[0];
+            Context context = (Context) params[1];
+
         }
     };
 
-    public AsyncTask<LatLng, Void, String> getCongressionalTask() {
-        return congressionalTask;
-    }
-
-    public void setCongressionalTask(AsyncTask<LatLng, Void, String> congressionalTask) {
-        this.congressionalTask = congressionalTask;
-    }
-
-    public void start(LatLng latLng) {
-
-    }
-
-    public class FetchAddressIntentService extends Service {
-        protected ResultReceiver mReceiver;
-
-        public FetchAddressIntentService() {
-
-        }
-
-        private void deliverResultToReceiver(int resultCode, String message) {
-            Bundle bundle = new Bundle();
-            bundle.putString(Constants.RESULT_DATA_KEY, message);
-            mReceiver.send(resultCode, bundle);
-        }
-
-        @Nullable
+    private AsyncTask<Object, Void, String[]> networkTask = new AsyncTask<Object, Void, String[]>() {
         @Override
-        public IBinder onBind(Intent intent) {
-            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-            Location location = intent.getParcelableExtra(
-                    Constants.LOCATION_DATA_EXTRA);
+        protected String[] doInBackground(Object... params) {
+            LatLng latLng = (LatLng) params[0];
+            Context context = (Context) params[1];
+            Geocoder geocoder = new Geocoder(context, Locale.getDefault());
 
             List<android.location.Address> addresses = null;
+            String[] arr = new String[4];
             try {
                 addresses = geocoder.getFromLocation(
-                        location.getLatitude(),
-                        location.getLongitude(),
+                        latLng.latitude,
+                        latLng.longitude,
                         // In this sample, get just a single address.
                         1);
             } catch (IOException ioException) {
@@ -91,33 +61,40 @@ public class NetworkAsyncWrapper {
                 // Catch invalid latitude or longitude values.
                 String errorMessage = "Invalid lat long";
                 Log.e("Latitude Error: ", errorMessage + ". " +
-                        "Latitude = " + location.getLatitude() +
+                        "Latitude = " + latLng.latitude +
                         ", Longitude = " +
-                        location.getLongitude(), illegalArgumentException);
+                        latLng.longitude, illegalArgumentException);
             }
 
             // Handle case where no address was found.
             if (addresses == null || addresses.size()  == 0) {
                 String errorMessage = "No address found.";
                 Log.e("Error in address: ", errorMessage);
-                deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
             } else {
                 android.location.Address address = addresses.get(0);
-                ArrayList<String> addressFragments = new ArrayList<String>();
-
-                // Fetch the address lines using getAddressLine,
-                // join them, and send them to the thread.
-                for(int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-                    addressFragments.add(address.getAddressLine(i));
-                }
-                Log.i("Stuff", "Found address");
-                deliverResultToReceiver(Constants.SUCCESS_RESULT,
-                        TextUtils.join(System.getProperty("line.separator"),
-                                addressFragments));
+                Log.i("Stuff", "Found address: " + address.toString());
+                arr[0] = address.getPostalCode();
+                arr[1] = address.getLocality();
+                arr[2] = address.getAdminArea();
+                arr[3] = address.getSubAdminArea();
             }
-            return null;
+            return arr;
         }
+    };
+
+    public AsyncTask<Object, Void, String> getCongressionalTask() {
+        return congressionalTask;
     }
+
+
+    public AsyncTask<Object, Void, String[]> getNetworkTask() {
+        return networkTask;
+    }
+
+    public void start(LatLng latLng, Context context) {
+
+    }
+
 
     public final class Constants {
         public static final int SUCCESS_RESULT = 0;
@@ -131,23 +108,4 @@ public class NetworkAsyncWrapper {
                 ".LOCATION_DATA_EXTRA";
     }
 
-    private class AddressResultReceiver extends ResultReceiver {
-        public AddressResultReceiver(Handler handler) {
-            super(handler);
-        }
-
-        @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-
-            // Display the address string
-            // or an error message sent from the intent service.
-            String addressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
-
-            // Show a toast message if an address was found.
-            if (resultCode == Constants.SUCCESS_RESULT) {
-
-            }
-
-        }
-    }
-    }
+}
