@@ -22,19 +22,78 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.civicinfo.CivicInfo;
+import com.google.api.services.civicinfo.CivicInfoRequestInitializer;
+import com.google.api.services.civicinfo.model.DivisionSearchResponse;
+import com.google.api.services.civicinfo.model.Office;
+import com.google.api.services.civicinfo.model.RepresentativeInfoResponse;
+import com.google.api.services.tasks.TasksScopes;
+
+
 /**
  * Created by manavdutta1 on 7/15/17.
  */
 
 //stores asynchronous tasks for network operations
 public class NetworkAsyncWrapper {
+    private static final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport();
+    private static final GsonFactory JSON_FACTORY = new GsonFactory();
+    private static final HttpRequestInitializer httpRequestInitializer = new HttpRequestInitializer() {
+        @Override
+        public void initialize(HttpRequest request) throws IOException {
+        }
+    };
 
     private AsyncTask<Object, Void, String> congressionalTask = new AsyncTask<Object, Void, String>() {
         @Override
         protected String doInBackground(Object... params) {
             Address address = (Address) params[0];
             Context context = (Context) params[1];
+            GoogleClientRequestInitializer keyInitializer =
+                    new CivicInfoRequestInitializer(context.getResources().getString(R.string.api_key));
+            CivicInfo civicInfo =
+                    new CivicInfo.Builder(HTTP_TRANSPORT, JSON_FACTORY, httpRequestInitializer)
+                            .setApplicationName("Places")
+                            .setGoogleClientRequestInitializer(keyInitializer)
+                            .build();
+            RepresentativeInfoResponse representativeInfoResponse = null;
+            String districtName = "";
+            try {
+                representativeInfoResponse = civicInfo.representatives()
+                        .representativeInfoByAddress()
+                        .setAddress(address.toString())
+                        .execute();
 
+                List<Office> offices = representativeInfoResponse.getOffices();
+                for (Office office: offices) {
+                    if (office.getName().contains("United States House of Representatives")) {
+                        int startIndex = office.getName().length() - 5;
+                        districtName = office.getName().substring(startIndex);
+                    }
+                }
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
+            return districtName;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.e("The result: ", result);
         }
     };
 
@@ -79,6 +138,11 @@ public class NetworkAsyncWrapper {
                 arr[3] = address.getSubAdminArea();
             }
             return arr;
+        }
+
+        @Override
+        protected void onPostExecute(String[] result) {
+            Log.e("The result: ", result.toString());
         }
     };
 
