@@ -35,7 +35,6 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:26.+'
     compile 'com.android.support:support-v4:26.+'
-    compile 'com.google.android.gms:play-services:9.0.2'
     compile 'com.google.apis:google-api-services-civicinfo:v2-rev22-1.22.0'
     compile 'com.google.api-client:google-api-client:1.22.0'
     compile 'com.google.apis:google-api-services-tasks:v1-rev35-1.19.0' exclude module: 'httpclient'
@@ -46,6 +45,8 @@ dependencies {
         exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
     }
     compile 'com.google.android.gms:play-services-identity:7.3.0'
+    compile 'com.google.android.gms:play-services-maps:11.0.2'
+    compile 'com.google.android.gms:play-services-location:11.0.2'
     testCompile 'junit:junit:4.12'
 }
 repositories {

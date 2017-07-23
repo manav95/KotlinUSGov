@@ -23,11 +23,6 @@ import java.util.List;
 import java.util.Locale;
 
 
-import com.google.android.gms.auth.GoogleAuthException;
-import com.google.api.client.googleapis.json.GoogleJsonError;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
