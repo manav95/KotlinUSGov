@@ -138,7 +138,7 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
 
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         setIntro = false;
-        networkAsyncWrapper.start(latLng, this.getApplicationContext());
+        networkAsyncWrapper.start(latLng, this);
     }
 
     private boolean checkLocation() {

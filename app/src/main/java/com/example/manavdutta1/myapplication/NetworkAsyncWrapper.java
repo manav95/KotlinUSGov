@@ -1,5 +1,6 @@
 package com.example.manavdutta1.myapplication;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.os.ResultReceiver;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.gms.identity.intents.Address;
 import com.google.android.gms.maps.model.LatLng;
@@ -47,6 +49,7 @@ import com.google.api.services.tasks.TasksScopes;
 public class NetworkAsyncWrapper {
     private static final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport();
     private static final GsonFactory JSON_FACTORY = new GsonFactory();
+    private static String[] values;
     private static final HttpRequestInitializer httpRequestInitializer = new HttpRequestInitializer() {
         @Override
         public void initialize(HttpRequest request) throws IOException {
@@ -54,12 +57,13 @@ public class NetworkAsyncWrapper {
     };
 
     private AsyncTask<Object, Void, String> congressionalTask = new AsyncTask<Object, Void, String>() {
+        private Activity theActivityContext;
         @Override
         protected String doInBackground(Object... params) {
             Address address = (Address) params[0];
-            Context context = (Context) params[1];
+            theActivityContext = (Activity) params[1];
             GoogleClientRequestInitializer keyInitializer =
-                    new CivicInfoRequestInitializer(context.getResources().getString(R.string.api_key));
+                    new CivicInfoRequestInitializer(theActivityContext.getApplicationContext().getResources().getString(R.string.api_key));
             CivicInfo civicInfo =
                     new CivicInfo.Builder(HTTP_TRANSPORT, JSON_FACTORY, httpRequestInitializer)
                             .setApplicationName("Places")
@@ -89,18 +93,22 @@ public class NetworkAsyncWrapper {
         @Override
         protected void onPostExecute(String result) {
             Log.e("The result: ", result);
+            TextView congressionalView = (TextView) theActivityContext.findViewById(R.id.textView6);
+            congressionalView.setText(result);
         }
     };
 
-    private AsyncTask<Object, Void, String[]> networkTask = new AsyncTask<Object, Void, String[]>() {
+    private AsyncTask<Object, Void, android.location.Address> networkTask = new AsyncTask<Object, Void, android.location.Address>() {
+        private Activity theActivity;
+
         @Override
-        protected String[] doInBackground(Object... params) {
+        protected android.location.Address doInBackground(Object... params) {
             LatLng latLng = (LatLng) params[0];
-            Context context = (Context) params[1];
-            Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+            theActivity = (Activity) params[1];
+            Geocoder geocoder = new Geocoder(theActivity.getApplicationContext(), Locale.getDefault());
 
             List<android.location.Address> addresses = null;
-            String[] arr = new String[4];
+            android.location.Address address = null;
             try {
                 addresses = geocoder.getFromLocation(
                         latLng.latitude,
@@ -125,33 +133,43 @@ public class NetworkAsyncWrapper {
                 String errorMessage = "No address found.";
                 Log.e("Error in address: ", errorMessage);
             } else {
-                android.location.Address address = addresses.get(0);
+                address = addresses.get(0);
                 Log.i("Stuff", "Found address: " + address.toString());
-                arr[0] = address.getPostalCode();
-                arr[1] = address.getLocality();
-                arr[2] = address.getAdminArea();
-                arr[3] = address.getSubAdminArea();
             }
-            return arr;
+            return address;
         }
 
         @Override
-        protected void onPostExecute(String[] result) {
-            Log.e("The result: ", result.toString());
+        protected void onPostExecute(android.location.Address address) {
+            Log.e("The result: ", address.toString());
+            String[] arr = new String[4];
+            arr[0] = address.getPostalCode();
+            arr[1] = address.getLocality();
+            arr[2] = address.getAdminArea();
+            arr[3] = address.getSubAdminArea();
+            ((TextView)theActivity.findViewById(R.id.textView)).setText(arr[0]);
+            ((TextView)theActivity.findViewById(R.id.textView2)).setText(arr[1]);
+            ((TextView)theActivity.findViewById(R.id.textView4)).setText(arr[2]);
+            ((TextView)theActivity.findViewById(R.id.textView5)).setText(arr[3]);
+            congressionalTask.execute(address, theActivity);
         }
     };
+
+    private static void setValue(String[] result) {
+       values = result;
+    }
 
     public AsyncTask<Object, Void, String> getCongressionalTask() {
         return congressionalTask;
     }
 
 
-    public AsyncTask<Object, Void, String[]> getNetworkTask() {
+    public AsyncTask<Object, Void, android.location.Address> getNetworkTask() {
         return networkTask;
     }
 
     public void start(LatLng latLng, Context context) {
-
+          networkTask.execute(latLng, context);
     }
 
 
