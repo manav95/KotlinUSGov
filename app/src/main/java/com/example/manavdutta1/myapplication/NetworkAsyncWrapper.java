@@ -16,7 +16,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.google.android.gms.identity.intents.Address;
+import android.location.Address;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
@@ -74,7 +74,7 @@ public class NetworkAsyncWrapper {
             try {
                 representativeInfoResponse = civicInfo.representatives()
                         .representativeInfoByAddress()
-                        .setAddress(address.toString())
+                        .setAddress(address.getAddressLine(0))
                         .execute();
 
                 List<Office> offices = representativeInfoResponse.getOffices();
@@ -143,10 +143,10 @@ public class NetworkAsyncWrapper {
         protected void onPostExecute(android.location.Address address) {
             Log.e("The result: ", address.toString());
             String[] arr = new String[4];
-            arr[0] = address.getPostalCode();
-            arr[1] = address.getLocality();
+            arr[0] = address.getLocality();
+            arr[1] = address.getSubAdminArea();
             arr[2] = address.getAdminArea();
-            arr[3] = address.getSubAdminArea();
+            arr[3] = address.getPostalCode();
             ((TextView)theActivity.findViewById(R.id.textView)).setText(arr[0]);
             ((TextView)theActivity.findViewById(R.id.textView2)).setText(arr[1]);
             ((TextView)theActivity.findViewById(R.id.textView4)).setText(arr[2]);

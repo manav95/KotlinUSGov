@@ -1,5 +1,6 @@
 package com.example.manavdutta1.myapplication;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,7 +26,10 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.logging.Logger;
+
 public class IntroActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener{
+    private static final int MY_PERMISSIONS_FINE_LOCATION = 2;
     private GoogleApiClient mGoogleApiClient;
     private Location mLocation;
     private NetworkAsyncWrapper networkAsyncWrapper;
@@ -61,15 +65,37 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
 
         mLocationManager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
 
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                MY_PERMISSIONS_FINE_LOCATION);
+
     }
 
+    //need to request permissions first
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_FINE_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mGoogleApiClient.connect();
+                }
+                else {
+                    Log.e("Error: ", "Permission not granted to get location");
+                    //finish activity due to lack of permissions
+                    finish();
+                }
+            }
+
+        }
+    }
     @Override
     public void onConnected(Bundle bundle) {
-        if ((ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) || setIntro) {
+        if ((ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             return;
         }
 
-        startLocationUpdates();
+        //startLocationUpdates();
 
         mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
@@ -77,9 +103,9 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
             startLocationUpdates();
         }
         if (mLocation != null) {
-
-            // mLatitudeTextView.setText(String.valueOf(mLocation.getLatitude()));
-            //mLongitudeTextView.setText(String.valueOf(mLocation.getLongitude()));
+            LatLng latLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+            setIntro = false;
+            networkAsyncWrapper.start(latLng, this);
         } else {
             Toast.makeText(this, "Location not Detected", Toast.LENGTH_SHORT).show();
         }
@@ -96,13 +122,6 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
         Log.i("LatLong Connection: ", "Connection failed. Error: " + connectionResult.getErrorCode());
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
-        }
-    }
 
     @Override
     protected void onStop() {
@@ -119,7 +138,7 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
                 .setInterval(UPDATE_INTERVAL)
                 .setFastestInterval(FASTEST_INTERVAL);
         // Request location updates
-        if ((ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) || setIntro ) {
+        if ((ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
