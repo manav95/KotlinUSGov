@@ -20,9 +20,13 @@ import android.location.Address;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
 
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -154,6 +158,35 @@ public class NetworkAsyncWrapper {
             congressionalTask.execute(address, theActivity);
         }
     };
+    private AsyncTask<String[],Void,List<Award>> databaseTask = new AsyncTask<String[], Void, List<Award>>() {
+        private final String host = "usgovpublics.cq9deuttyxvp.us-east-1.rds.amazonaws.com";
+        private final String port = "5432";
+        private final String dbName = "data_store_api";
+        private final String user = "root";
+        private final String pass = "password";
+
+        @Override
+        protected List<Award> doInBackground(String[]... params) {
+            try {
+                Class.forName("org.postgresql.Driver");
+                String jdbcUrl = "jdbc:postgresql://" + this.host + ":" + this.port + "/" + this.dbName + "?user=" + this.user + "&password=" + this.pass;
+                Log.i("Info: ", "Getting remote connection with connection string from environment variables.");
+                Connection con = DriverManager.getConnection(jdbcUrl);
+                Properties properties = con.getClientInfo();
+                Log.i("Connection Object: ", properties.toString());
+            }
+            catch (ClassNotFoundException e) { Log.e("ClassException: ", e.toString());}
+            catch (SQLException e) { Log.e("SQLException: ", e.toString());}
+            finally {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<Award> awards) {
+
+        }
+    };
 
     private static void setValue(String[] result) {
        values = result;
@@ -166,6 +199,10 @@ public class NetworkAsyncWrapper {
 
     public AsyncTask<Object, Void, android.location.Address> getNetworkTask() {
         return networkTask;
+    }
+
+    public AsyncTask<String[],Void,List<Award>> getDatabaseTask() {
+        return databaseTask;
     }
 
     public void start(LatLng latLng, Context context) {

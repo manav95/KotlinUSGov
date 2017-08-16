@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 public class IntroActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener{
@@ -52,6 +53,7 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                networkAsyncWrapper.getDatabaseTask().execute(new String[5]);
                 Intent i = new Intent(IntroActivity.this, TabbedActivity.class);
                 startActivity(i);
             }
