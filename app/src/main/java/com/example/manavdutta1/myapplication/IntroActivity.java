@@ -93,8 +93,6 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
                 }
                 String[] tasks = {type, value};
                 networkAsyncWrapper.getDatabaseTask().execute(tasks);
-                Intent i = new Intent(IntroActivity.this, TabbedActivity.class);
-                startActivity(i);
             }
         });
 

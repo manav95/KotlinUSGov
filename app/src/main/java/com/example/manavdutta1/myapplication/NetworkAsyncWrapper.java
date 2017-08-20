@@ -198,45 +198,36 @@ public class NetworkAsyncWrapper {
                 String awardSql = "";
                 PreparedStatement ps =null;
                 switch (params[0]) {
-                    case "Zip": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
+                    case "Zip": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id WHERE (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) ORDER BY a.create_date DESC LIMIT 25";
                                 ps = con.prepareStatement(awardSql);
                                 ps.setString(1, params[1]);
                                 ps.setString(2, params[1]);
                                 break;
-                    case "City": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.city_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.city_name = ? )) LIMIT 50";
+                    case "City": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id WHERE (a.recipient_id in (select location_id from references_location l where l.city_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.city_name = ? )) ORDER BY a.create_date DESC LIMIT 25";
                                  ps = con.prepareStatement(awardSql);
                                  ps.setString(1, params[1].toUpperCase());
                                  ps.setString(2, params[1].toUpperCase());
                                  break;
-                    case "County": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.county_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.county_name = ? )) LIMIT 50";
+                    case "County": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id WHERE (a.recipient_id in (select location_id from references_location l where l.county_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.county_name = ? )) ORDER BY a.create_date DESC LIMIT 25";
                                    ps = con.prepareStatement(awardSql);
                                    ps.setString(1, params[1].toUpperCase());
                                    ps.setString(2, params[1].toUpperCase());
                                    break;
-                    case "State": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.state_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.city_name = ? )) LIMIT 50";
+                    case "State": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id WHERE (a.recipient_id in (select location_id from references_location l where l.state_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.state_name = ? )) ORDER BY a.create_date DESC LIMIT 25";
                                   ps = con.prepareStatement(awardSql);
                                   ps.setString(1, params[1].toUpperCase());
                                   ps.setString(2, params[1].toUpperCase());
                                   break;
-                    default:      awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.city_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.city_name = ? )) LIMIT 50";
+                    default:      awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id WHERE (a.recipient_id in (select location_id from references_location l where l.congressional_code = ? and l.state_code = ?) or a.place_of_performance_id in (select location_id from references_location l where l.congressional_code = ? AND l.state_code= ?)) ORDER BY a.create_date DESC LIMIT 25";
                                   ps = con.prepareStatement(awardSql);
-                                  ps.setString(1, params[1].toUpperCase());
-                                  ps.setString(2, params[1].toUpperCase());
+                                  ps.setString(1, params[1].substring(params[1].length() - 2));
+                                  ps.setString(2, params[1].substring(0, 2));
+                                  ps.setString(3, params[1].substring(params[1].length() - 2));
+                                  ps.setString(4, params[1].substring(0, 2));
                                   break;
                 }
-                String awardZipSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? ))";
-                String awardCitySql = "select * from awards a LEFT JOIN legal_entity recipient ON recipient.recipient_unique_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
-                String awardStateSql = "select * from awards a LEFT JOIN legal_entity recipient ON recipient.recipient_unique_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
-                String awardCountySQL = "select * from awards a LEFT JOIN legal_entity recipient ON recipient.recipient_unique_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
-                String awardCongressionalSQL = "select * from awards a LEFT JOIN legal_entity recipient ON recipient.recipient_unique_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
-                PreparedStatement psOne = con.prepareStatement(awardZipSql);
-                psOne.setString(1, params[0]);
-                psOne.setString(2, params[0]);
-                ResultSet rsOne = psOne.executeQuery();
-                //ResultSet rsTwo = psOne.executeQuery();
-                //ResultSet rsThree = psOne.executeQuery();
-                //ResultSet rsFour = psOne.executeQuery();
-                //ResultSet rsFive = psOne.executeQuery();
+
+                ResultSet rsOne = ps.executeQuery();
 
                 while(rsOne.next()) {
                     int i = 1;
