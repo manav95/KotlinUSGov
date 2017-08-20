@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ResultReceiver;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -20,8 +21,29 @@ import android.location.Address;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.Date;
+import java.sql.NClob;
+import java.sql.ParameterMetaData;
+import java.sql.PreparedStatement;
+import java.sql.Ref;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.sql.DriverManager;
@@ -158,7 +180,7 @@ public class NetworkAsyncWrapper {
             congressionalTask.execute(address, theActivity);
         }
     };
-    private AsyncTask<String[],Void,List<Award>> databaseTask = new AsyncTask<String[], Void, List<Award>>() {
+    private AsyncTask<String,Void,List<Award>> databaseTask = new AsyncTask<String, Void, List<Award>>() {
         private final String host = "usgovpublics.cq9deuttyxvp.us-east-1.rds.amazonaws.com";
         private final String port = "5432";
         private final String dbName = "data_store_api";
@@ -166,17 +188,69 @@ public class NetworkAsyncWrapper {
         private final String pass = "password";
 
         @Override
-        protected List<Award> doInBackground(String[]... params) {
+        protected List<Award> doInBackground(String... params) {
             try {
                 Class.forName("org.postgresql.Driver");
                 String jdbcUrl = "jdbc:postgresql://" + this.host + ":" + this.port + "/" + this.dbName + "?user=" + this.user + "&password=" + this.pass;
                 Log.i("Info: ", "Getting remote connection with connection string from environment variables.");
                 Connection con = DriverManager.getConnection(jdbcUrl);
-                Properties properties = con.getClientInfo();
-                Log.i("Connection Object: ", properties.toString());
+                List<Award> awards = new ArrayList<>();
+                String awardSql = "";
+                PreparedStatement ps =null;
+                switch (params[0]) {
+                    case "Zip": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
+                                ps = con.prepareStatement(awardSql);
+                                ps.setString(1, params[1]);
+                                ps.setString(2, params[1]);
+                                break;
+                    case "City": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.city_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.city_name = ? )) LIMIT 50";
+                                 ps = con.prepareStatement(awardSql);
+                                 ps.setString(1, params[1].toUpperCase());
+                                 ps.setString(2, params[1].toUpperCase());
+                                 break;
+                    case "County": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.county_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.county_name = ? )) LIMIT 50";
+                                   ps = con.prepareStatement(awardSql);
+                                   ps.setString(1, params[1].toUpperCase());
+                                   ps.setString(2, params[1].toUpperCase());
+                                   break;
+                    case "State": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.state_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.city_name = ? )) LIMIT 50";
+                                  ps = con.prepareStatement(awardSql);
+                                  ps.setString(1, params[1].toUpperCase());
+                                  ps.setString(2, params[1].toUpperCase());
+                                  break;
+                    default:      awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.city_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.city_name = ? )) LIMIT 50";
+                                  ps = con.prepareStatement(awardSql);
+                                  ps.setString(1, params[1].toUpperCase());
+                                  ps.setString(2, params[1].toUpperCase());
+                                  break;
+                }
+                String awardZipSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? ))";
+                String awardCitySql = "select * from awards a LEFT JOIN legal_entity recipient ON recipient.recipient_unique_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
+                String awardStateSql = "select * from awards a LEFT JOIN legal_entity recipient ON recipient.recipient_unique_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
+                String awardCountySQL = "select * from awards a LEFT JOIN legal_entity recipient ON recipient.recipient_unique_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
+                String awardCongressionalSQL = "select * from awards a LEFT JOIN legal_entity recipient ON recipient.recipient_unique_id = a.recipient_id AND (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) LIMIT 50";
+                PreparedStatement psOne = con.prepareStatement(awardZipSql);
+                psOne.setString(1, params[0]);
+                psOne.setString(2, params[0]);
+                ResultSet rsOne = psOne.executeQuery();
+                //ResultSet rsTwo = psOne.executeQuery();
+                //ResultSet rsThree = psOne.executeQuery();
+                //ResultSet rsFour = psOne.executeQuery();
+                //ResultSet rsFive = psOne.executeQuery();
+
+                while(rsOne.next()) {
+                    int i = 1;
+                    Award award = new Award(rsOne.getString(i++), rsOne.getString(i++), rsOne.getString(i++), rsOne.getDate(i++), rsOne.getString(i++), rsOne.getLong(i++));
+                    awards.add(award);
+                }
+                return awards;
             }
-            catch (ClassNotFoundException e) { Log.e("ClassException: ", e.toString());}
-            catch (SQLException e) { Log.e("SQLException: ", e.toString());}
+            catch (ClassNotFoundException e) {
+                Log.e("ClassException: ", e.toString());
+            }
+            catch (SQLException e) {
+                Log.e("SQLException: ", e.toString());
+            }
             finally {
                 return null;
             }
@@ -201,7 +275,7 @@ public class NetworkAsyncWrapper {
         return networkTask;
     }
 
-    public AsyncTask<String[],Void,List<Award>> getDatabaseTask() {
+    public AsyncTask<String,Void,List<Award>> getDatabaseTask() {
         return databaseTask;
     }
 

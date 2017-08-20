@@ -7,6 +7,39 @@ import java.util.Date;
  */
 
 public class Award {
+    private String category;
+    private String typeDescription;
+    private String description;
+    private Date createdDt;
+    private String recipient;
+    private Long totalObligation;
+
+    public Award(String category, String typeDescription, String description, Date cDt, String recip, Long totalMoney) {
+        this.category = category;
+        this.typeDescription = typeDescription;
+        this.description = description;
+        this.createdDt = cDt;
+        this.recipient = recip;
+        this.totalObligation = totalMoney;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
+    }
+
+
+    public Long getTotalObligation() {
+        return totalObligation;
+    }
+
+    public void setTotalObligation(Long totalObligation) {
+        this.totalObligation = totalObligation;
+    }
+
     public String getCategory() {
         return category;
     }
@@ -38,18 +71,4 @@ public class Award {
     public void setCreatedDt(Date createdDt) {
         this.createdDt = createdDt;
     }
-
-    public Date getUpdatedDt() {
-        return updatedDt;
-    }
-
-    public void setUpdatedDt(Date updatedDt) {
-        this.updatedDt = updatedDt;
-    }
-
-    private String category;
-    private String typeDescription;
-    private String description;
-    private Date createdDt;
-    private Date updatedDt;
 }

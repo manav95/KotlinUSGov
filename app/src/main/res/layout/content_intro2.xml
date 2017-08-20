@@ -109,4 +109,54 @@
         android:layout_marginTop="20dp"
         android:text="TextView" />
 
+    <RadioGroup
+        android:layout_width="fill_parent"
+        android:layout_height="90dp"
+        android:weightSum="1"
+        android:id="@+id/queryGroup"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+        <RadioButton
+            android:id="@+id/zipButton"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/congressional_district"
+            android:text="Zip" />
+
+        <RadioButton
+            android:id="@+id/cityButton"
+            android:layout_width="85dp"
+            android:layout_height="57dp"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/congressional_district"
+            android:text="City" />
+
+        <RadioButton
+            android:id="@+id/countyButton"
+            android:layout_width="85dp"
+            android:layout_height="57dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="County" />
+
+        <RadioButton
+            android:id="@+id/stateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="58dp"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/congressional_district"
+            android:text="State" />
+
+        <RadioButton
+            android:id="@+id/congressionalButton"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/congressional_district"
+            android:text="Congressional" />
+    </RadioGroup>
+
 </RelativeLayout>

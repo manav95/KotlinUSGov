@@ -18,6 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -40,20 +42,57 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
     private long UPDATE_INTERVAL = 2 * 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
     private boolean setIntro = true;
+    private TextView stateView;
+    private TextView countyView;
+    private TextView congressionalView;
+    private TextView cityView;
+    private TextView zipView;
+    private RadioGroup radioGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         networkAsyncWrapper = new NetworkAsyncWrapper();
+        cityView = (TextView) findViewById(R.id.textView);
+        countyView = (TextView) findViewById(R.id.textView2);
+        stateView = (TextView) findViewById(R.id.textView4);
+        zipView = (TextView) findViewById(R.id.textView5);
+        congressionalView = (TextView) findViewById(R.id.textView6);
+        radioGroup = (RadioGroup) findViewById(R.id.queryGroup);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                networkAsyncWrapper.getDatabaseTask().execute(new String[5]);
+                String type = "";
+                String value = "";
+                switch (radioGroup.getCheckedRadioButtonId()) {
+                    case R.id.zipButton:
+                        value = (String) zipView.getText();
+                        type = "Zip";
+                        break;
+                    case R.id.cityButton:
+                        value = (String) cityView.getText();
+                        type = "City";
+                        break;
+                    case R.id.countyButton:
+                        value = (String) countyView.getText();
+                        type = "County";
+                        break;
+                    case R.id.stateButton:
+                        value = (String) stateView.getText();
+                        type=  "State";
+                        break;
+                    case R.id.congressionalButton:
+                        value = (String) congressionalView.getText();
+                        type = "Congressional";
+                        break;
+                }
+                String[] tasks = {type, value};
+                networkAsyncWrapper.getDatabaseTask().execute(tasks);
                 Intent i = new Intent(IntroActivity.this, TabbedActivity.class);
                 startActivity(i);
             }
