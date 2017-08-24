@@ -100,7 +100,7 @@ public class Award implements Parcelable {
     }
 
     public static final Parcelable.Creator<Award> CREATOR
-            = new Parcelable.Creator<Award>() {
+    = new Parcelable.Creator<Award>() {
         public Award createFromParcel(Parcel in) {
             return new Award(in);
         }
@@ -110,3 +110,4 @@ public class Award implements Parcelable {
         }
     };
 }
+
