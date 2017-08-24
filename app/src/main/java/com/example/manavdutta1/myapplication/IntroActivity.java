@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +29,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -47,6 +49,8 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
     private TextView congressionalView;
     private TextView cityView;
     private TextView zipView;
+    private EditText username;
+    private EditText password;
     private RadioGroup radioGroup;
 
     @Override
@@ -55,12 +59,14 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
         setContentView(R.layout.activity_intro);
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        networkAsyncWrapper = new NetworkAsyncWrapper();
+        networkAsyncWrapper = new NetworkAsyncWrapper(this);
         cityView = (TextView) findViewById(R.id.textView);
         countyView = (TextView) findViewById(R.id.textView2);
         stateView = (TextView) findViewById(R.id.textView4);
         zipView = (TextView) findViewById(R.id.textView5);
         congressionalView = (TextView) findViewById(R.id.textView6);
+        username = (EditText) findViewById(R.id.username);
+        password = (EditText) findViewById(R.id.password);
         radioGroup = (RadioGroup) findViewById(R.id.queryGroup);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -91,7 +97,7 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
                         type = "Congressional";
                         break;
                 }
-                String[] tasks = {type, value};
+                String[] tasks = {type, value, username.getText().toString(), password.getText().toString()};
                 networkAsyncWrapper.getDatabaseTask().execute(tasks);
             }
         });
@@ -183,6 +189,13 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
                 mLocationRequest, this);
         Log.d("reque", "--->>>>");
+    }
+
+    public void switchToTabbed(ArrayList<Award> awards, String type) {
+        Intent i = new Intent(this, ListSpendingActivity.class);
+        i.putParcelableArrayListExtra("AWARDLIST", awards);
+        i.putExtra("TYPE", type);
+        startActivity(i);
     }
 
     @Override

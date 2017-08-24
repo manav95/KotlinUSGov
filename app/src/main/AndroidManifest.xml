@@ -26,13 +26,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".TabbedActivity"
-            android:label="@string/title_activity_tabbed"
+            android:name=".ListSpendingActivity"
+            android:label="ListSpendingActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
 
-        <service
-            android:name=".FetchAddressIntentService"
-            android:exported="false"/>
     </application>
 
 

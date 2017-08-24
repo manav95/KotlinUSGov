@@ -1,12 +1,15 @@
 package com.example.manavdutta1.myapplication;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Date;
 
 /**
  * Created by manavdutta1 on 8/15/17.
  */
 
-public class Award {
+public class Award implements Parcelable {
     private String category;
     private String typeDescription;
     private String description;
@@ -21,6 +24,15 @@ public class Award {
         this.createdDt = cDt;
         this.recipient = recip;
         this.totalObligation = totalMoney;
+    }
+
+    public Award(Parcel in) {
+        this.category = in.readString();
+        this.typeDescription = in.readString();
+        this.description = in.readString();
+        this.createdDt = new Date(in.readLong());
+        this.recipient = in.readString();
+        this.totalObligation = in.readLong();
     }
 
     public String getRecipient() {
@@ -71,4 +83,30 @@ public class Award {
     public void setCreatedDt(Date createdDt) {
         this.createdDt = createdDt;
     }
+
+    private int mData;
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeString(this.category);
+        out.writeString(this.typeDescription);
+        out.writeString(this.description);
+        out.writeLong(this.createdDt.getTime());
+        out.writeString(this.recipient);
+        out.writeLong(this.totalObligation);
+    }
+
+    public static final Parcelable.Creator<Award> CREATOR
+            = new Parcelable.Creator<Award>() {
+        public Award createFromParcel(Parcel in) {
+            return new Award(in);
+        }
+
+        public Award[] newArray(int size) {
+            return new Award[size];
+        }
+    };
 }

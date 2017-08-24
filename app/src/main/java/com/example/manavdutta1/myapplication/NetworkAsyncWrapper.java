@@ -76,11 +76,16 @@ public class NetworkAsyncWrapper {
     private static final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport();
     private static final GsonFactory JSON_FACTORY = new GsonFactory();
     private static String[] values;
+    private IntroActivity activity;
     private static final HttpRequestInitializer httpRequestInitializer = new HttpRequestInitializer() {
         @Override
         public void initialize(HttpRequest request) throws IOException {
         }
     };
+
+    public NetworkAsyncWrapper(IntroActivity theActivity) {
+           this.activity = theActivity;
+    }
 
     private AsyncTask<Object, Void, String> congressionalTask = new AsyncTask<Object, Void, String>() {
         private Activity theActivityContext;
@@ -180,23 +185,25 @@ public class NetworkAsyncWrapper {
             congressionalTask.execute(address, theActivity);
         }
     };
-    private AsyncTask<String,Void,List<Award>> databaseTask = new AsyncTask<String, Void, List<Award>>() {
+    private AsyncTask<String,Void,ArrayList<Award>> databaseTask = new AsyncTask<String, Void, ArrayList<Award>>() {
         private final String host = "usgovpublics.cq9deuttyxvp.us-east-1.rds.amazonaws.com";
         private final String port = "5432";
         private final String dbName = "data_store_api";
-        private final String user = "root";
-        private final String pass = "password";
+        private String user;
+        private String pass;
+        private String type = "";
 
         @Override
-        protected List<Award> doInBackground(String... params) {
+        protected ArrayList<Award> doInBackground(String... params) {
+            ArrayList<Award> awards = new ArrayList<>();
             try {
                 Class.forName("org.postgresql.Driver");
-                String jdbcUrl = "jdbc:postgresql://" + this.host + ":" + this.port + "/" + this.dbName + "?user=" + this.user + "&password=" + this.pass;
+                String jdbcUrl = "jdbc:postgresql://" + this.host + ":" + this.port + "/" + this.dbName + "?user=" + params[2] + "&password=" + params[3];
                 Log.i("Info: ", "Getting remote connection with connection string from environment variables.");
                 Connection con = DriverManager.getConnection(jdbcUrl);
-                List<Award> awards = new ArrayList<>();
                 String awardSql = "";
                 PreparedStatement ps =null;
+                type = params[0];
                 switch (params[0]) {
                     case "Zip": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id WHERE (a.recipient_id in (select location_id from references_location l where l.zip5 = ?) or a.place_of_performance_id in (select location_id from references_location l where l.zip5 = ? )) ORDER BY a.create_date DESC LIMIT 25";
                                 ps = con.prepareStatement(awardSql);
@@ -210,8 +217,9 @@ public class NetworkAsyncWrapper {
                                  break;
                     case "County": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id WHERE (a.recipient_id in (select location_id from references_location l where l.county_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.county_name = ? )) ORDER BY a.create_date DESC LIMIT 25";
                                    ps = con.prepareStatement(awardSql);
-                                   ps.setString(1, params[1].toUpperCase());
-                                   ps.setString(2, params[1].toUpperCase());
+                                   String county = params[1].split("\\s+")[0];
+                                   ps.setString(1, county.toUpperCase());
+                                   ps.setString(2, county.toUpperCase());
                                    break;
                     case "State": awardSql = "select a.category, a.type_description, a.description, a.create_date, recipient.recipient_name, a.total_obligation from awards a LEFT JOIN legal_entity recipient ON recipient.legal_entity_id = a.recipient_id WHERE (a.recipient_id in (select location_id from references_location l where l.state_name = ?) or a.place_of_performance_id in (select location_id from references_location l where l.state_name = ? )) ORDER BY a.create_date DESC LIMIT 25";
                                   ps = con.prepareStatement(awardSql);
@@ -234,7 +242,6 @@ public class NetworkAsyncWrapper {
                     Award award = new Award(rsOne.getString(i++), rsOne.getString(i++), rsOne.getString(i++), rsOne.getDate(i++), rsOne.getString(i++), rsOne.getLong(i++));
                     awards.add(award);
                 }
-                return awards;
             }
             catch (ClassNotFoundException e) {
                 Log.e("ClassException: ", e.toString());
@@ -242,14 +249,12 @@ public class NetworkAsyncWrapper {
             catch (SQLException e) {
                 Log.e("SQLException: ", e.toString());
             }
-            finally {
-                return null;
-            }
+            return awards;
         }
 
         @Override
-        protected void onPostExecute(List<Award> awards) {
-
+        protected void onPostExecute(ArrayList<Award> awards) {
+              activity.switchToTabbed(awards, type);
         }
     };
 
@@ -266,7 +271,7 @@ public class NetworkAsyncWrapper {
         return networkTask;
     }
 
-    public AsyncTask<String,Void,List<Award>> getDatabaseTask() {
+    public AsyncTask<String,Void,ArrayList<Award>> getDatabaseTask() {
         return databaseTask;
     }
 

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
+
+    <TextView
+        android:id="@+id/category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Category"
+        android:textSize="14px" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/typeDesc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Type Description"
+        android:textSize="14px"></TextView>
+
+    <TextView
+        android:id="@+id/desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Description"
+        android:textSize="14px"></TextView>
+
+    <TextView
+        android:id="@+id/createdDt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Created Date"
+        android:textSize="14px" >
+    </TextView>
+    <TextView
+        android:id="@+id/recipient"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recipient Name"
+        android:textSize="14px" >
+    </TextView>
+    <TextView
+        android:id="@+id/totalObligation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total Obligation"
+        android:textSize="14px" >
+    </TextView>
+
+</LinearLayout>
